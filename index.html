@@ -3,111 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sıralı Bluetooth Reklam Paneli</title>
+    <title>BT 6.0 İşletme Reklam Paneli</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        :root { --primary: #2563eb; --accent: #7c3aed; --bg: #f1f5f9; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
-        .card { background: white; width: 100%; max-width: 450px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 15px; }
+        :root { --primary: #2563eb; --accent: #7c3aed; --success: #059669; --bg: #f8fafc; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
         
-        .setup-box { background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
-        label { font-size: 11px; font-weight: bold; color: #64748b; text-transform: uppercase; }
-        input, textarea { width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; margin: 5px 0 15px 0; box-sizing: border-box; }
+        .card { background: white; width: 100%; max-width: 450px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); padding: 25px; margin-bottom: 20px; box-sizing: border-box; border: 1px solid #e2e8f0; }
+        h2 { margin-top: 0; color: #1e293b; text-align: center; font-size: 1.4rem; }
         
-        .btn { width: 100%; color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; margin-bottom: 10px; font-size: 15px; }
-        .btn-scan { background: linear-gradient(135deg, var(--primary), var(--accent)); }
+        .input-group { background: #f1f5f9; padding: 15px; border-radius: 16px; margin-bottom: 20px; }
+        label { display: block; font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 8px; }
+        input, textarea { width: 100%; border: 1px solid #cbd5e1; border-radius: 10px; padding: 12px; font-size: 14px; margin-bottom: 10px; box-sizing: border-box; }
+        
+        .btn { width: 100%; color: white; border: none; padding: 16px; border-radius: 14px; font-weight: bold; cursor: pointer; font-size: 16px; margin-bottom: 10px; transition: 0.2s; }
+        .btn-scan { background: linear-gradient(135deg, var(--primary), var(--accent)); box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); }
         .btn-print { background: #334155; }
+        .btn:active { transform: scale(0.97); }
+
+        #status { display: none; padding: 12px; border-radius: 12px; text-align: center; font-size: 13px; margin-bottom: 15px; font-weight: 500; }
         
-        #status { display: none; padding: 10px; border-radius: 10px; text-align: center; font-size: 13px; margin-bottom: 10px; }
-        
-        .reklam-onizleme { display: none; border: 2px solid var(--primary); border-radius: 15px; padding: 15px; background: #eff6ff; }
-        
+        .reklam-karti { display: none; border: 2px solid var(--primary); border-radius: 18px; padding: 20px; background: #eff6ff; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { border-color: #2563eb; } 50% { border-color: #7c3aed; } 100% { border-color: #2563eb; } }
+
+        /* Yazdırma Modu */
         @media print {
             .no-print { display: none !important; }
-            .card { box-shadow: none; border: 1px solid #000; }
-            body { background: white; }
+            .card { box-shadow: none; border: 2px solid #000; margin: 0; width: 100%; }
+            body { background: white; padding: 0; }
         }
 
-        #qrcode { padding: 10px; background: white; display: inline-block; }
+        #qrcode { padding: 15px; background: white; border-radius: 12px; display: inline-block; border: 1px solid #e2e8f0; }
     </style>
 </head>
 <body>
 
     <div class="card no-print">
-        <h2 style="text-align:center; margin-top:0;">🚀 Reklam Otomasyonu</h2>
+        <h2>📡 Reklam Otomasyonu</h2>
         
-        <div class="setup-box">
-            <label>Reklam Başlığı</label>
-            <input type="text" id="tInp" value="İşletmemize Hoş Geldiniz!">
+        <div class="input-group">
+            <label>Kampanya Başlığı</label>
+            <input type="text" id="tInp" value="Özel Müşteri İndirimi!">
             <label>Reklam Mesajı</label>
-            <textarea id="mInp" rows="3">Bluetooth bağlantısı için kasada %20 indirim! Kod: PROMO20</textarea>
+            <textarea id="mInp" rows="2">Bağlantınız doğrulandı! Kasada bu ekranı gösterin ve %20 indirimi kapın.</textarea>
         </div>
 
-        <button class="btn btn-scan" onclick="siraliYayinla()">TEK TIKLA SIRALI YAYINLA</button>
+        <button class="btn btn-scan" onclick="siraliYayinla()">TARAMAYI BAŞLAT & YAYINLA</button>
         <button class="btn btn-print" onclick="window.print()">QR KODU YAZDIR (ÇIKTI AL)</button>
         
         <div id="status"></div>
 
-        <div id="reklamSonuc" class="reklam-onizleme">
+        <div id="reklamSonuc" class="reklam-karti">
             <h3 id="resT" style="margin:0; color:var(--primary);"></h3>
-            <p id="resM" style="margin:10px 0; font-size:14px;"></p>
-            <small>Durum: <b id="resD" style="color:var(--accent);">YAYINDA</b></small>
+            <p id="resM" style="margin:10px 0; font-size:15px; line-height:1.4;"></p>
+            <div style="font-size: 11px; color: #64748b; border-top: 1px solid #dbeafe; padding-top: 10px;">
+                Aktif Yayın: <b id="resD" style="color:var(--success);"></b>
+            </div>
         </div>
     </div>
 
-    <div class="card" id="printArea">
-        <h2 style="text-align:center;">MÜŞTERİ GİRİŞİ</h2>
-        <p style="text-align:center; font-size:14px;">Ücretsiz İndirim ve Hediyeler İçin QR Kodu Okutun</p>
-        <div style="text-align:center;">
+    <div class="card">
+        <h2 style="margin-bottom:10px;">BURADAN BAŞLAYIN</h2>
+        <p style="text-align:center; font-size:14px; color:#475569;">Ücretsiz hediyeler ve indirimleri görmek için QR kodu taratın.</p>
+        <div style="text-align:center; margin: 20px 0;">
             <div id="qrcode"></div>
         </div>
-        <p id="urlDisplay" style="text-align:center; font-size:10px; color:#64748b; margin-top:10px;"></p>
+        <p style="text-align:center; font-size:10px; color:#94a3b8; font-family: monospace;" id="urlText"></p>
     </div>
 
 <script>
-    // Sayfa açıldığında URL'yi al ve QR oluştur
+    // QR Oluşturma
     window.onload = function() {
-        const url = window.location.href;
-        document.getElementById('urlDisplay').textContent = url;
+        const currentUrl = window.location.href;
+        document.getElementById('urlText').textContent = currentUrl;
         new QRCode(document.getElementById("qrcode"), {
-            text: url,
+            text: currentUrl,
             width: 200,
-            height: 200
+            height: 200,
+            colorDark : "#000000",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
         });
     };
 
-    // Sıralı Yayınlama Mantığı
+    // Bluetooth Yayın Fonksiyonu
     async function siraliYayinla() {
-        const status = document.getElementById('status');
+        const s = document.getElementById('status');
         const rBox = document.getElementById('reklamSonuc');
         
-        status.style.display = "block";
-        status.style.background = "#e2e8f0";
-        status.textContent = "Sıralı Tarama Başladı... Lütfen listeden bir cihaz seçin.";
+        s.style.display = "block";
+        s.style.background = "#f1f5f9";
+        s.style.color = "#475569";
+        s.textContent = "Çevredeki cihazlar taranıyor...";
 
         try {
-            // Tarayıcı güvenliği gereği her cihaz seçimi kullanıcı onayı ister
-            // Ancak bu döngüyü hızlıca tekrar ettirerek "sıralı" etki yaratıyoruz
+            // Cihaz seçimi (Kullanıcı etkileşimi şarttır)
             const device = await navigator.bluetooth.requestDevice({
                 acceptAllDevices: true,
                 optionalServices: ['generic_access']
             });
 
-            // Bilgileri Güncelle
+            // Arayüzü güncelle
             document.getElementById('resT').textContent = document.getElementById('tInp').value;
             document.getElementById('resM').textContent = document.getElementById('mInp').value;
-            document.getElementById('resD').textContent = device.name || "Cihaz Algılandı (" + device.id.slice(-4) + ")";
+            document.getElementById('resD').textContent = device.name || "Müşteri Cihazı (ID: " + device.id.slice(-4) + ")";
             
             rBox.style.display = "block";
-            status.style.background = "#dcfce7";
-            status.textContent = "Reklam Yayınlandı! Yeni cihaz için tekrar basın.";
+            s.style.background = "#dcfce7";
+            s.style.color = "#166534";
+            s.textContent = "Reklam Başarıyla Yayınlandı!";
 
-            // Poco/Android titreşim geri bildirimi
+            // Geri bildirim titreşimi
             if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
 
         } catch (err) {
-            status.style.background = "#fee2e2";
-            status.textContent = "İşlem durduruldu: " + err.message;
+            s.style.background = "#fee2e2";
+            s.style.color = "#991b1b";
+            s.textContent = "Hata: " + err.message;
         }
     }
 </script>
