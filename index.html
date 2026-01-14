@@ -3,134 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profesyonel QR & BLE Reklam İstasyonu</title>
+    <title>Ultra-BLE Otomatik Reklam İstasyonu</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        :root { --p: #2563eb; --s: #059669; --bg: #f8fafc; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; padding: 0; }
+        :root { --p: #2563eb; --s: #059669; --bg: #f8fafc; --danger: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; padding: 0; color: #1e293b; }
         
-        /* Yönetim Paneli - Sadece Ekranda Görünür */
-        .admin-panel { 
-            background: white; max-width: 600px; margin: 20px auto; 
-            padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-        .input-group { background: #f1f5f9; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
-        label { display: block; font-size: 11px; font-weight: 800; color: #64748b; margin-bottom: 5px; }
-        input, textarea { width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; margin-bottom: 10px; box-sizing: border-box; }
+        /* Yönetim Paneli */
+        .admin-panel { background: white; max-width: 600px; margin: 15px auto; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .input-group { background: #f1f5f9; padding: 12px; border-radius: 12px; margin-bottom: 15px; }
+        label { display: block; font-size: 11px; font-weight: 800; color: #64748b; margin-bottom: 5px; text-transform: uppercase; }
+        input, textarea { width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; margin-bottom: 8px; box-sizing: border-box; }
         
-        .btn { width: 100%; border: none; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; margin-bottom: 10px; transition: 0.2s; color: white; }
-        .btn-qr { background: var(--p); }
-        .btn-scan { background: #7c3aed; }
-        .btn-print { background: #1e293b; }
+        .btn { width: 100%; border: none; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 15px; margin-bottom: 8px; color: white; transition: 0.2s; }
+        .btn-auto { background: linear-gradient(135deg, #7c3aed, #2563eb); border: 2px solid #fff; box-shadow: 0 0 15px rgba(124, 58, 237, 0.4); }
+        .btn-qr { background: #1e293b; }
+        .btn-stop { background: var(--danger); display: none; }
         .btn:active { transform: scale(0.98); }
 
-        /* Yazdırma Düzeni (A4'e 2 Adet) */
-        .print-container { 
-            display: none; /* Sadece yazdırırken veya QR oluşunca görünür */
-            flex-direction: column; gap: 40px; padding: 20px;
-            background: white; align-items: center;
-        }
-        .qr-item { 
-            border: 2px dashed #ccc; padding: 30px; border-radius: 20px; 
-            text-align: center; width: 80%; max-width: 400px; page-break-inside: avoid;
-        }
-        .qr-item h1 { margin: 0 0 10px 0; color: #111; font-size: 24px; }
-        .qr-item p { font-size: 16px; color: #444; margin-bottom: 20px; }
-        .qr-code-div { display: inline-block; padding: 10px; background: white; border: 1px solid #eee; }
+        #status { display: none; padding: 12px; border-radius: 10px; text-align: center; font-size: 13px; font-weight: bold; margin-bottom: 10px; transition: 0.5s; }
 
+        /* A4 Yazdırma Düzeni */
+        .print-area { display: none; flex-direction: column; gap: 30px; padding: 20px; align-items: center; background: white; }
+        .qr-item { border: 2px solid #000; padding: 20px; text-align: center; width: 85%; max-width: 380px; page-break-inside: avoid; border-radius: 15px; }
+        
         @media print {
             .no-print { display: none !important; }
-            body { background: white; }
-            .print-container { display: flex !important; width: 100%; padding: 0; }
-            .qr-item { width: 90%; margin: 20px auto; border: 1px solid #000; }
+            .print-area { display: flex !important; }
         }
     </style>
 </head>
 <body>
 
     <div class="admin-panel no-print">
-        <h2 style="text-align:center; margin-top:0;">📡 Reklam & QR Yönetimi</h2>
+        <h2 style="text-align:center; margin-top:0;">⚡ Otomatik Reklam Yayını</h2>
         
         <div class="input-group">
-            <label>1. KAMPANYA BAŞLIĞI</label>
-            <input type="text" id="tInp" placeholder="Örn: %30 İndirim Fırsatı!">
-            
-            <label>2. REKLAM MESAJI</label>
-            <textarea id="mInp" rows="2" placeholder="Müşteriye özel mesajınızı buraya yazın..."></textarea>
-            
-            <label>3. WEB SİTESİ LİNKİ (Opsiyonel)</label>
-            <input type="text" id="urlInp" placeholder="https://isletmen.com">
+            <label>Kampanya Başlığı & Mesajı</label>
+            <input type="text" id="tInp" value="ŞANSLI MÜŞTERİ SEÇİLDİNİZ!">
+            <textarea id="mInp" rows="2">Bu ekranı kasaya gösterin, anında hediyenizi alın! Kod: BLE-AUTO</textarea>
+            <input type="text" id="urlInp" value="" placeholder="Web siteniz (Boşsa bu sayfa kullanılır)">
         </div>
 
-        <button class="btn btn-qr" onclick="generateQRs()">QR KODLARI OLUŞTUR</button>
-        <button class="btn btn-scan" onclick="powerScan()">ULTRA-BLE TARAMA MODU</button>
-        <button class="btn btn-print" onclick="window.print()">A4 SAYFASINA YAZDIR (2 ADET)</button>
+        <button id="startBtn" class="btn btn-auto" onclick="startAutoMode()">OTOMATİK SERİ YAYINI BAŞLAT</button>
+        <button id="stopBtn" class="btn btn-stop" onclick="stopAutoMode()">YAYINI DURDUR</button>
+        <button class="btn btn-qr" onclick="generateQRs()">QR OLUŞTUR & YAZDIRMAYA HAZIRLA</button>
         
-        <div id="status" style="display:none; text-align:center; padding:10px; font-size:13px; font-weight:bold;"></div>
+        <div id="status"></div>
     </div>
 
-    <div id="printArea" class="print-container">
+    <div id="printContainer" class="print-area">
         <div class="qr-item">
-            <h1 class="target-title">Kampanya Başlığı</h1>
-            <p class="target-msg">Reklam metni burada görünecek.</p>
-            <div id="qrcode1" class="qr-code-div"></div>
-            <div style="margin-top:15px; font-size:10px; color:#888;">isletmen.com | Güvenli Doğrulama</div>
+            <h1 class="t-title">Kampanya</h1><p class="t-msg">Mesaj</p>
+            <div id="qrcode1"></div>
         </div>
-
         <div class="qr-item">
-            <h1 class="target-title">Kampanya Başlığı</h1>
-            <p class="target-msg">Reklam metni burada görünecek.</p>
-            <div id="qrcode2" class="qr-code-div"></div>
-            <div style="margin-top:15px; font-size:10px; color:#888;">isletmen.com | Güvenli Doğrulama</div>
+            <h1 class="t-title">Kampanya</h1><p class="t-msg">Mesaj</p>
+            <div id="qrcode2"></div>
         </div>
     </div>
 
 <script>
+    let isAutoMode = false;
+    let scanCount = 0;
+
+    // QR Oluşturma (A4'e 2 adet)
     function generateQRs() {
-        const title = document.getElementById('tInp').value || "Hoş Geldiniz!";
-        const msg = document.getElementById('mInp').value || "Size özel bir teklifimiz var.";
+        const title = document.getElementById('tInp').value;
+        const msg = document.getElementById('mInp').value;
         const web = document.getElementById('urlInp').value || window.location.href;
 
-        // Başlık ve mesajları güncelle
-        document.querySelectorAll('.target-title').forEach(el => el.innerText = title);
-        document.querySelectorAll('.target-msg').forEach(el => el.innerText = msg);
+        document.querySelectorAll('.t-title').forEach(el => el.innerText = title);
+        document.querySelectorAll('.t-msg').forEach(el => el.innerText = msg);
 
-        // QR İçeriği: Başlık + Mesaj + Web Sitesi
-        const qrText = `KAMPANYA: ${title}\nMESAJ: ${msg}\nWEB: ${web}`;
+        const qrText = `REKLAM: ${title}\nMESAJ: ${msg}\nDOĞRULAMA: ${web}`;
 
-        // QR Alanlarını temizle ve yeniden oluştur
         ["qrcode1", "qrcode2"].forEach(id => {
             const container = document.getElementById(id);
             container.innerHTML = "";
-            new QRCode(container, {
-                text: qrText,
-                width: 280,
-                height: 280,
-                colorDark : "#000000",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
-            });
+            new QRCode(container, { text: qrText, width: 250, height: 250 });
         });
 
-        document.getElementById('printArea').style.display = "flex";
-        alert("QR Kodlar Hazır! 'A4 Yazdır' butonuyla çıktı alabilirsiniz.");
+        alert("QR Kodlar hazır! Şimdi 'Yazdır' (Ctrl+P) diyerek A4 çıktısı alabilirsiniz.");
     }
 
-    async function powerScan() {
+    // GÜÇLENDİRİLMİŞ BLE VE OTOMATİK YAYIN
+    async function startAutoMode() {
+        isAutoMode = true;
+        scanCount = 0;
+        document.getElementById('startBtn').style.display = 'none';
+        document.getElementById('stopBtn').style.display = 'block';
+        autoScanLoop();
+    }
+
+    function stopAutoMode() {
+        isAutoMode = false;
+        document.getElementById('startBtn').style.display = 'block';
+        document.getElementById('stopBtn').style.display = 'none';
         const s = document.getElementById('status');
+        s.style.background = "#64748b";
+        s.innerText = "Yayın Durduruldu.";
+    }
+
+    async function autoScanLoop() {
+        if (!isAutoMode) return;
+
+        const s = document.getElementById('status');
+        s.style.display = "block";
+        s.style.background = "#7c3aed";
+        s.style.color = "white";
+        s.innerText = `[${++scanCount}] Yeni Cihaz Taranıyor...`;
+
         try {
-            s.style.display = "block"; s.style.background = "#e2e8f0"; s.innerText = "BLE Tarama Modu Güçlendirildi... Cihaz Bekleniyor.";
+            // BLE CİHAZLARI TAM GÖSTERMEK İÇİN GÜÇLENDİRİLMİŞ SERVİS LİSTESİ
             const device = await navigator.bluetooth.requestDevice({
                 acceptAllDevices: true,
-                optionalServices: ['generic_access', 'device_information']
+                optionalServices: [
+                    'generic_access', 
+                    'device_information', 
+                    'battery_service',
+                    0x1802, 0x1803, 0x1804 // BLE Güç ve Alarm servisleri
+                ]
             });
-            s.style.background = "#dcfce7"; s.innerText = "Cihaz Yakalandı: " + (device.name || "İsimsiz BLE Cihaz");
+
+            s.style.background = "#059669";
+            s.innerText = `BAĞLANDI: ${device.name || 'İsimsiz Cihaz'} \nReklam İletildi!`;
+
             if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-        } catch (e) {
-            s.innerText = "Hata: " + e.message;
+
+            // Kısa bir bekleme ve sonraki cihaza otomatik geçiş
+            setTimeout(() => {
+                if (isAutoMode) autoScanLoop();
+            }, 2000);
+
+        } catch (err) {
+            console.log("Tarama atlandı veya iptal edildi.");
+            if (isAutoMode) {
+                s.style.background = "#f59e0b";
+                s.innerText = "Yeni cihaz aranıyor...";
+                setTimeout(() => autoScanLoop(), 1000);
+            }
         }
     }
 </script>
-
 </body>
 </html>
