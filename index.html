@@ -1,107 +1,121 @@
-            
 <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>İşletme Akıllı Reklam Paneli</title>
+    <title>İşletme Bluetooth Reklam v4</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        :root { --p: #2563eb; --s: #10b981; --bg: #f8fafc; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .card { background: white; width: 100%; max-width: 450px; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        h2 { color: #1e293b; text-align: center; margin-top: 0; }
-        
-        /* Düzenleyici Alanı */
-        .box { background: #f1f5f9; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #e2e8f0; }
-        label { display: block; font-size: 12px; font-weight: bold; color: #64748b; margin-bottom: 5px; text-transform: uppercase; }
-        input, textarea { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 10px; box-sizing: border-box; }
-        
-        .btn { width: 100%; background: var(--p); color: white; border: none; padding: 16px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.2s; }
-        .btn:hover { background: #1d4ed8; }
-
-        /* QR Kod Bölümü */
-        #qr-container { display: flex; flex-direction: column; align-items: center; margin-top: 20px; padding: 15px; border: 2px dashed #cbd5e1; border-radius: 15px; }
-        #qrcode { margin: 15px 0; }
-
-        /* Reklam Sonucu */
-        #status { margin: 15px 0; padding: 10px; border-radius: 8px; text-align: center; font-size: 13px; display: none; }
-        .result { margin-top: 20px; padding: 20px; border: 2px solid var(--p); border-radius: 15px; background: #eff6ff; display: none; }
+        :root { --primary: #2563eb; --accent: #7c3aed; --bg: #f1f5f9; --text: #1e293b; }
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        .card { background: white; width: 100%; max-width: 420px; border-radius: 24px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); padding: 25px; margin-bottom: 20px; box-sizing: border-box; }
+        h1 { font-size: 1.5rem; text-align: center; margin-top: 0; color: var(--primary); }
+        .input-group { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 16px; margin-bottom: 20px; }
+        label { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 8px; }
+        input, textarea { width: 100%; border: 1px solid #cbd5e1; border-radius: 10px; padding: 12px; font-size: 0.95rem; margin-bottom: 12px; box-sizing: border-box; transition: 0.2s; }
+        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        .btn { width: 100%; background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; border: none; padding: 16px; border-radius: 14px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+        .btn:active { transform: scale(0.97); }
+        #status { display: none; margin: 15px 0; padding: 12px; border-radius: 10px; text-align: center; font-size: 0.85rem; font-weight: 500; }
+        .reklam-karti { display: none; background: linear-gradient(135deg, #eff6ff, #f5f3ff); border: 2px solid var(--primary); padding: 20px; border-radius: 18px; margin-top: 20px; animation: slideUp 0.4s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .qr-section { text-align: center; border-top: 1px solid #e2e8f0; margin-top: 20px; padding-top: 20px; }
+        #qrcode { display: inline-block; padding: 10px; background: white; border-radius: 12px; border: 1px solid #e2e8f0; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>📡 İşletme Paneli</h2>
-    
-    <div class="box">
-        <label>Reklam Başlığı</label>
-        <input type="text" id="titleInp" value="Hoş Geldiniz!">
-        <label>Reklam Mesajı</label>
-        <textarea id="msgInp" rows="2">Bu mesajı görüyorsanız %20 indirim kazandınız!</textarea>
+    <div class="card">
+        <h1>📡 Reklam Paneli</h1>
+        
+        <div class="input-group">
+            <label>Kampanya Başlığı</label>
+            <input type="text" id="tInp" value="Bluetooth Özel İndirimi!">
+            <label>Reklam Mesajı</label>
+            <textarea id="mInp" rows="2">Dükkanımıza hoş geldiniz! Size özel %20 indirim kodunuz: BT6G</textarea>
+        </div>
+
+        <button class="btn" onclick="runSmartBT()">TARAMAYI BAŞLAT</button>
+        
+        <div id="status"></div>
+
+        <div id="reklamSonuc" class="reklam-karti">
+            <h3 id="resT" style="margin: 0 0 8px 0; color: var(--primary);"></h3>
+            <p id="resM" style="margin: 0 0 15px 0; font-size: 0.95rem; line-height: 1.5;"></p>
+            <div style="font-size: 0.75rem; color: #64748b; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 10px;">
+                Bulunan Cihaz: <span id="resD" style="font-weight: 700; color: var(--accent);"></span>
+            </div>
+        </div>
     </div>
 
-    <button class="btn" onclick="startBT()">ETRAFI TARA & TEST ET</button>
-    <div id="status"></div>
-
-    <div id="result" class="result">
-        <h3 id="resT" style="margin:0; color:var(--p);"></h3>
-        <p id="resM" style="margin:10px 0;"></p>
-        <small>Bağlantı: <b id="resD"></b></small>
+    <div class="card">
+        <div class="qr-section">
+            <label>Müşterileri Buraya Yönlendirin</label>
+            <div id="qrcode"></div>
+            <p style="font-size: 0.8rem; color: #64748b; margin-top: 10px;">Bu QR kodu okutan müşteriler reklam sayfanıza HTTPS üzerinden ulaşır.</p>
+        </div>
     </div>
-</div>
-
-<div class="card" id="qr-card">
-    <h3 style="text-align: center; margin-top: 0;">📲 Müşteri Girişi</h3>
-    <p style="text-align: center; font-size: 13px; color: #64748b;">Müşterilerinizin bu sayfaya anında ulaşması için bu QR kodu masalara veya vitrine koyabilirsiniz.</p>
-    <div id="qr-container">
-        <div id="qrcode"></div>
-        <small id="currentUrl" style="word-break: break-all; color: var(--p); font-weight: bold; text-align: center;"></small>
-    </div>
-</div>
 
 <script>
-    // Sayfa açıldığında otomatik QR kod oluştur
+    // QR Kodu Sayfa Yüklendiğinde Oluştur
     window.onload = function() {
-        const url = window.location.href;
-        document.getElementById('currentUrl').textContent = url;
         new QRCode(document.getElementById("qrcode"), {
-            text: url,
-            width: 180,
-            height: 180,
+            text: window.location.href,
+            width: 160,
+            height: 160,
             colorDark : "#1e293b",
             colorLight : "#ffffff",
             correctLevel : QRCode.CorrectLevel.H
         });
     };
 
-    async function startBT() {
-        const status = document.getElementById('status');
-        const result = document.getElementById('result');
-        
-        try {
-            status.style.display = "block";
-            status.style.background = "#f1f5f9";
-            status.textContent = "Bluetooth taranıyor... Lütfen bir cihaz seçin.";
+    async function runSmartBT() {
+        const s = document.getElementById('status');
+        const r = document.getElementById('reklamSonuc');
+        const d = document.getElementById('resD');
 
-            // Filtreleri eski cihazları da kapsayacak şekilde genişletiyoruz
+        try {
+            s.style.display = "block";
+            s.style.background = "#e2e8f0";
+            s.style.color = "#475569";
+            s.textContent = "Bluetooth taranıyor... Cihazı seçin.";
+
+            // Filtreleri geniş tutuyoruz
             const device = await navigator.bluetooth.requestDevice({
                 acceptAllDevices: true,
-                optionalServices: [0x1800, 0x180a, 'battery_service']
+                optionalServices: ['generic_access', 'device_information']
             });
 
-            status.style.background = "#dcfce7";
-            status.textContent = "Bağlantı Başarılı!";
+            s.textContent = "Cihaz isimlendiriliyor...";
+            let name = device.name;
 
-            document.getElementById('resT').textContent = document.getElementById('titleInp').value;
-            document.getElementById('resM').textContent = document.getElementById('msgInp').value;
-            document.getElementById('resD').textContent = device.name || "İsimsiz Cihaz (" + device.id.slice(-5) + ")";
-            
-            result.style.display = "block";
+            // İsim yoksa, GATT servisi üzerinden ismini çekmeyi dene (Zorlayıcı Mod)
+            if (!name) {
+                try {
+                    const server = await device.gatt.connect();
+                    const service = await server.getPrimaryService('generic_access');
+                    const char = await service.getCharacteristic('gap.device_name');
+                    const val = await char.readValue();
+                    name = new TextDecoder().decode(val);
+                    await device.gatt.disconnect();
+                } catch (e) {
+                    name = "Gizli Cihaz (ID: " + device.id.slice(-5) + ")";
+                }
+            }
 
-        } catch (e) {
-            status.style.background = "#fee2e2";
-            status.textContent = "Hata: " + e.message;
+            s.style.background = "#dcfce7";
+            s.style.color = "#166534";
+            s.textContent = "Başarılı!";
+
+            document.getElementById('resT').textContent = document.getElementById('tInp').value;
+            document.getElementById('resM').textContent = document.getElementById('mInp').value;
+            d.textContent = name;
+            r.style.display = "block";
+
+        } catch (err) {
+            s.style.background = "#fee2e2";
+            s.style.color = "#991b1b";
+            s.textContent = "Hata: " + err.message;
         }
     }
 </script>
