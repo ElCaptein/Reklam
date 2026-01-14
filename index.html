@@ -3,106 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>İşletme BLE Reklam Paneli</title>
+    <title>Pro-Markette BLE Paneli</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        :root { --primary: #2563eb; --accent: #7c3aed; --bg: #ffffff; }
-        body { font-family: 'Inter', sans-serif; background: #f1f5f9; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; }
+        :root { --p: #2563eb; --a: #7c3aed; --bg: #ffffff; }
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; color: #1e293b; }
         
-        /* Panel Alanı */
-        .admin-panel { background: white; width: 100%; max-width: 500px; padding: 20px; border-bottom: 2px solid #e2e8f0; box-sizing: border-box; }
-        .input-group { background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; }
-        input, textarea { width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; margin-top: 5px; box-sizing: border-box; }
+        /* Yönetim Paneli */
+        .admin-box { background: #fff; width: 100%; max-width: 600px; padding: 25px; border-bottom: 3px solid var(--p); box-sizing: border-box; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .input-group { background: #f1f5f9; padding: 15px; border-radius: 15px; margin-bottom: 15px; }
+        label { display: block; font-size: 11px; font-weight: 800; color: #64748b; margin-bottom: 5px; text-transform: uppercase; }
+        input, textarea { width: 100%; border: 1px solid #cbd5e1; border-radius: 10px; padding: 12px; margin-bottom: 10px; box-sizing: border-box; font-size: 14px; }
         
-        .btn { width: 100%; color: white; border: none; padding: 16px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 16px; margin-bottom: 10px; }
-        .btn-ble { background: linear-gradient(135deg, var(--primary), var(--accent)); }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn { border: none; padding: 16px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; color: white; }
+        .btn-scan { background: linear-gradient(135deg, var(--p), var(--a)); grid-column: span 2; font-size: 16px; }
+        .btn-update { background: #0f172a; }
+        .btn-print { background: #475569; }
+        .btn:active { transform: scale(0.96); opacity: 0.9; }
 
-        /* QR Kod - Tam Sayfa Odaklı */
-        .qr-card { background: white; width: 100%; max-width: 500px; padding: 40px 20px; text-align: center; box-sizing: border-box; min-height: 70vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        #qrcode { margin: 20px auto; padding: 20px; border: 10px solid #f1f5f9; border-radius: 20px; }
-        #qrcode img { width: 300px !important; height: 300px !important; } /* QR boyutu büyütüldü */
-
-        .status-badge { display: none; padding: 10px; border-radius: 30px; font-size: 12px; font-weight: bold; margin-bottom: 10px; }
+        /* QR ve Reklam Alanı (Büyük Boyut) */
+        .display-card { background: white; width: 100%; max-width: 600px; padding: 40px 20px; text-align: center; box-sizing: border-box; border-radius: 0 0 30px 30px; }
+        #qrcode { margin: 25px auto; padding: 15px; border: 1px solid #eee; display: inline-block; background: white; }
+        
+        .status-bar { display: none; margin: 10px 0; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 600; }
+        
+        .live-promo { margin-top: 30px; padding: 25px; border: 3px dashed var(--p); border-radius: 20px; background: #f0f7ff; display: none; }
 
         @media print {
             .no-print { display: none !important; }
-            .qr-card { min-height: 100vh; padding: 0; }
-            #qrcode { border: none; }
+            body { background: white; }
+            .display-card { padding: 0; margin: 0; }
+            #qrcode img { width: 450px !important; height: 450px !important; }
         }
     </style>
 </head>
 <body>
 
-    <div class="admin-panel no-print">
-        <h3 style="margin-top:0;">📡 BLE Reklam Kontrolü</h3>
+    <div class="admin-box no-print">
+        <h2 style="margin:0 0 20px 0; text-align:center;">📡 Reklam ve Tarama Kontrolü</h2>
+        
         <div class="input-group">
-            <label style="font-size:12px; font-weight:bold; color:#64748b;">KAMPANYA METNİ</label>
-            <input type="text" id="tInp" value="HOŞ GELDİNİZ!">
-            <textarea id="mInp" rows="2">Size özel indirim tanımlandı. Bluetooth ile doğrulayın!</textarea>
+            <label>Kampanya Başlığı (QR'a Gömülür)</label>
+            <input type="text" id="tInp" value="Özel Müşteri İndirimi!" oninput="updateQR()">
+            
+            <label>Reklam Mesajı (QR'a Gömülür)</label>
+            <textarea id="mInp" rows="2" oninput="updateQR()">Bu karekodu okutan şanslı kişiye kasada %25 anında indirim! Kod: BLE2026</textarea>
         </div>
-        <button class="btn btn-ble" onclick="startBLERadiation()">BLE TARAMASI VE YAYIN BAŞLAT</button>
-        <div id="status" class="status-badge"></div>
+
+        <div class="btn-group">
+            <button class="btn btn-scan" onclick="powerScan()">GÜÇLENDİRİLMİŞ BLE TARAMA BAŞLAT</button>
+            <button class="btn btn-update" onclick="updateQR()">QR GÜNCELLE</button>
+            <button class="btn btn-print" onclick="window.print()">QR ÇIKTI AL (TAM SAYFA)</button>
+        </div>
+        
+        <div id="status" class="status-bar"></div>
     </div>
 
-    <div class="qr-card">
-        <h1 style="font-size: 2rem; margin: 0; color: #1e293b;">İNDİRİMİ YAKALA</h1>
-        <p style="color: #64748b; font-size: 1.1rem; margin-top: 10px;">Telefonunuzun kamerasını buraya tutun</p>
+    <div class="display-card">
+        <h1 id="displayTitle" style="font-size: 2.2rem; margin:0; color: var(--p);">Özel Müşteri İndirimi!</h1>
+        <p style="color: #64748b; margin-top:10px; font-size: 1.1rem;">Kuponunuzu almak için QR kodu taratın</p>
         
         <div id="qrcode"></div>
         
-        <div id="reklamSonuc" style="display:none; border-top: 2px solid #eee; pt:20px; width:100%;">
-            <h2 id="resT" style="color:var(--primary); margin-bottom:5px;"></h2>
-            <p id="resM" style="font-size: 1.2rem; margin:0;"></p>
-            <small style="color:#94a3b8;">Cihaz Doğrulandı: <b id="resD"></b></small>
+        <div id="livePromo" class="live-promo">
+            <h2 id="resT" style="margin:0; color: var(--a);"></h2>
+            <p id="resM" style="font-size: 1.2rem; margin:15px 0; font-weight: 500;"></p>
+            <div style="font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0; pt:10px;">
+                Cihaz Sinyali: <b id="resD"></b> | Mod: <span style="color:var(--p)">Ultra-BLE</span>
+            </div>
         </div>
     </div>
 
 <script>
-    // QR Kodu Büyük Ölçekte Oluştur
-    window.onload = function() {
-        new QRCode(document.getElementById("qrcode"), {
-            text: window.location.href,
-            width: 300,
-            height: 300,
+    let qrcode;
+
+    // QR Kodu Başlat ve Güncelle
+    function updateQR() {
+        const t = document.getElementById('tInp').value;
+        const m = document.getElementById('mInp').value;
+        document.getElementById('displayTitle').textContent = t;
+        
+        // QR içeriğine hem URL'yi hem de reklam metnini gömüyoruz
+        // Böylece internet olmasa bile QR okuyucu mesajı görebilir
+        const qrContent = `KAMPANYA: ${t}\nMESAJ: ${m}\nLİNK: ${window.location.href}`;
+        
+        const qrDiv = document.getElementById("qrcode");
+        qrDiv.innerHTML = ""; // Eski QR'ı temizle
+        
+        qrcode = new QRCode(qrDiv, {
+            text: qrContent,
+            width: 350,
+            height: 350,
             colorDark : "#000000",
             colorLight : "#ffffff",
             correctLevel : QRCode.CorrectLevel.H
         });
-    };
+    }
 
-    // BLE Mantığı
-    async function startBLERadiation() {
+    window.onload = updateQR;
+
+    // Güçlendirilmiş BLE ve Klasik Tarama
+    async function powerScan() {
         const s = document.getElementById('status');
-        const rBox = document.getElementById('reklamSonuc');
+        const promo = document.getElementById('livePromo');
         
-        try {
-            s.style.display = "inline-block";
-            s.style.background = "#e2e8f0";
-            s.textContent = "BLE Sinyalleri İzleniyor...";
+        s.style.display = "block";
+        s.style.background = "#f1f5f9";
+        s.textContent = "🔍 Ultra-BLE Tarama Modu Aktif... Cihaz Bekleniyor.";
 
-            // BLE Tarama ve Etkileşim
-            // Not: Tarayıcı üzerinden "Broadcast" (Yayın) yapmak güvenlik nedeniyle kısıtlıdır.
-            // Bu fonksiyon çevredeki BLE sinyallerini yakalayıp "El Sıkışma" (Handshake) taklidi yapar.
+        try {
+            // Güçlendirilmiş Filtreleme: Hem isim hem de servis bazlı en geniş arama
             const device = await navigator.bluetooth.requestDevice({
                 acceptAllDevices: true,
-                optionalServices: ['generic_access', 'device_information']
+                optionalServices: [
+                    'generic_access', 
+                    'device_information', 
+                    'battery_service',
+                    0x1802, // Immediate Alert (BLE cihazlar için)
+                    0x1803  // Link Loss
+                ]
             });
 
             s.style.background = "#dcfce7";
             s.style.color = "#166534";
-            s.textContent = "BLE Bağlantısı Aktif!";
+            s.textContent = "✅ Cihaz Yakalandı!";
+
+            // İsim sorgusunu güçlendir
+            let deviceName = device.name;
+            if (!deviceName) {
+                deviceName = "Müşteri Cihazı (Sinyal ID: " + device.id.slice(-6).toUpperCase() + ")";
+            }
 
             document.getElementById('resT').textContent = document.getElementById('tInp').value;
             document.getElementById('resM').textContent = document.getElementById('mInp').value;
-            document.getElementById('resD').textContent = device.name || "Bilinmeyen BLE Cihaz";
+            document.getElementById('resD').textContent = deviceName;
             
-            rBox.style.display = "block";
-            if (navigator.vibrate) navigator.vibrate([100, 200, 100]);
+            promo.style.display = "block";
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
 
         } catch (err) {
-            s.style.display = "inline-block";
             s.style.background = "#fee2e2";
-            s.textContent = "Hata: " + err.message;
+            s.style.color = "#991b1b";
+            s.textContent = "Tarama Durdu: " + err.message;
         }
     }
 </script>
