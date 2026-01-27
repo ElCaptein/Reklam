@@ -3,139 +3,235 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BLE Reklam İstasyonu - Kararlı Sürüm</title>
+    <title>Reklam&Kampanya Oluştur</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        :root { --p: #2563eb; --s: #059669; --bg: #f1f5f9; }
-        body { font-family: sans-serif; background: var(--bg); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
-        .admin-panel { background: white; width: 100%; max-width: 500px; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .input-group { background: #f8fafc; padding: 15px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #ddd; }
-        input, textarea { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; color: white; margin-bottom: 10px; font-size: 14px; }
-        .btn-qr { background: #1e293b; }
-        .btn-auto { background: var(--p); }
-        .btn-stop { background: #dc2626; display: none; }
-        #status { display: none; padding: 12px; text-align: center; border-radius: 8px; font-weight: bold; margin-bottom: 10px; }
+        :root { --primary: #2563eb; --bg: #f8fafc; --accent: #475569; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; padding: 15px; color: #1e293b; }
         
-        /* Yazdırma Alanı - A4 Düzeni */
-        #printArea { display: none; flex-direction: column; gap: 40px; padding: 20px; align-items: center; }
-        .qr-item { border: 3px solid #000; padding: 30px; border-radius: 20px; text-align: center; width: 380px; background: white; page-break-inside: avoid; }
-        .q-title { font-size: 24px; margin: 0 0 10px 0; color: #000; text-transform: uppercase; }
-        .q-msg { font-size: 16px; margin: 0 0 20px 0; color: #333; line-height: 1.4; }
+        /* Panel Tasarımı */
+        .admin-panel { background: white; max-width: 650px; margin: 0 auto 30px; padding: 25px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); }
+        .section { background: #f1f5f9; border-radius: 12px; margin-bottom: 12px; overflow: hidden; border: 1px solid #e2e8f0; }
+        .section-header { padding: 12px 15px; background: #e2e8f0; cursor: pointer; font-weight: bold; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #334155; }
+        .section-content { padding: 15px; display: none; } 
+        .section.active .section-content { display: block; }
+
+        label { display: block; font-size: 11px; font-weight: 800; margin-bottom: 6px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+        input, textarea, select { width: 100%; padding: 12px; border: 2px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; margin-bottom: 12px; font-size: 14px; transition: 0.3s; }
+        input:focus { border-color: var(--primary); outline: none; }
         
+        .check-group { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; font-weight: bold; color: var(--accent); }
+        .check-group input { width: auto; margin: 0; }
+
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .btn { padding: 16px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.3s; color: white; font-size: 15px; }
+        .btn-blue { background: linear-gradient(135deg, #2563eb, #1d4ed8); grid-column: span 2; }
+        .btn-print { background: #059669; }
+
+        /* YAZDIRMA ALANI & DESENLER */
+        #printArea { display: none; width: 210mm; margin: 0 auto; background: white; padding: 10mm; box-sizing: border-box; }
+        
+        /* Arka Plan Desenleri (Ink-Friendly / Mürekkep Dostu) */
+        .bg-white { background: white; }
+        .bg-dots { 
+            background-color: #fdfdfd; 
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px); 
+            background-size: 20px 20px; 
+        }
+        .bg-lines { 
+            background: repeating-linear-gradient(45deg, #f8fafc, #f8fafc 10px, #e2e8f0 10px, #e2e8f0 11px); 
+        }
+        .bg-modern {
+            background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+        }
+        .bg-gold {
+            background: linear-gradient(to bottom, #fffbeb, #fff);
+            border-color: #d97706 !important;
+        }
+
+        .grid-1 { display: grid; grid-template-columns: 1fr; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10mm; }
+        .grid-4 { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 5mm; height: 277mm; }
+
+        .qr-card { 
+            border: 4px solid #1e293b; padding: 20px; border-radius: 24px; text-align: center; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; box-sizing: border-box;
+            position: relative; overflow: hidden;
+        }
+
+        .card-title { font-size: 20px; font-weight: 900; margin-bottom: 8px; line-height: 1.2; z-index: 2; position: relative; }
+        .campaign-text { font-size: 14px; color: #334155; margin-bottom: 8px; font-weight: 600; font-style: italic; z-index: 2; position: relative; }
+        .date-badge { 
+            font-size: 11px; color: #dc2626; font-weight: 800; text-transform: uppercase; 
+            margin-bottom: 15px; padding: 4px 10px; background: rgba(255,255,255,0.9); 
+            border-radius: 20px; border: 1px solid #dc2626; display: inline-block; z-index: 2; position: relative;
+        }
+        
+        /* QR Kodun Arkasına Beyaz Kutu (Okunabilirlik İçin) */
+        .qr-perfect-center { 
+            position: relative; display: inline-block; 
+            background: white; padding: 10px; border-radius: 15px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); z-index: 2;
+        }
+        .qr-logo-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 45px; height: 45px; background: white; padding: 4px; border-radius: 8px; z-index: 10; object-fit: contain; }
+
         @media print {
             .no-print { display: none !important; }
-            #printArea { display: flex !important; }
-            body { background: white; }
+            #printArea { display: grid !important; margin: 0; }
+            .bg-dots, .bg-lines, .bg-modern, .bg-gold { -webkit-print-color-adjust: exact; }
         }
     </style>
 </head>
 <body>
 
     <div class="admin-panel no-print">
-        <h2 style="text-align:center; color: var(--p);">📡 Bluetooth Reklam Paneli</h2>
-        <div class="input-group">
-            <label style="font-size: 11px; font-weight: bold; color: #666;">REKLAM BAŞLIĞI</label>
-            <input type="text" id="tInp" value="ÖZEL İNDİRİM FIRSATI">
-            
-            <label style="font-size: 11px; font-weight: bold; color: #666;">REKLAM MESAJI</label>
-            <textarea id="mInp" rows="2">Bu QR kodu okutanlara kasada anında %20 indirim uygulanacaktır!</textarea>
-            
-            <label style="font-size: 11px; font-weight: bold; color: #666;">YÖNLENDİRİLECEK LİNK</label>
-            <input type="text" id="urlInp" placeholder="Boş bırakılırsa bu sayfa açılır">
+        <h2 style="text-align:center; color: var(--primary); margin:0 0 5px 0;">🚀 SEO & Marketing Studio</h2>
+        <p style="text-align:center; font-size:12px; color:#64748b; margin-bottom:20px;">Trafik Artırıcı Akıllı Algoritma Aktif</p>
+
+        <div class="section active">
+            <div class="section-header" onclick="toggleSection(this)">📈 GOOGLE TRAFİK BOOST (ÖNERİLEN) <span>▼</span></div>
+            <div class="section-content">
+                <p style="font-size:11px; color:#059669; background:#ecfdf5; padding:8px; border-radius:5px; margin-top:0;">
+                    💡 <b>İpucu:</b> Doğrudan link yerine işletme adınızı girerseniz, müşteri Google'da sizi aratmış gibi olur. Bu, sıralamanızı yükseltir.
+                </p>
+                
+                <label>İŞLETME ADI VE ŞEHİR (Google Araması Oluşturur)</label>
+                <input type="text" id="businessName" placeholder="Örn: Paşa Döner Kadıköy">
+                
+                <label style="margin-top:10px;">VEYA DİREKT LİNK (Opsiyonel)</label>
+                <input type="text" id="directUrl" placeholder="http://...">
+            </div>
         </div>
 
-        <button class="btn btn-qr" onclick="createQR()">1. QR KODLARI OLUŞTUR</button>
-        <button id="startBtn" class="btn btn-auto" onclick="startAutoMode()">2. OTOMATİK SERİ YAYIN BAŞLAT</button>
-        <button id="stopBtn" class="btn btn-stop" onclick="stopAutoMode()">YAYINI DURDUR</button>
-        <button class="btn btn-qr" style="background:#475569;" onclick="window.print()">3. A4 KAĞIDA YAZDIR</button>
-        
-        <div id="status"></div>
+        <div class="section">
+            <div class="section-header" onclick="toggleSection(this)">📢 KAMPANYA DETAYLARI <span>▼</span></div>
+            <div class="section-content">
+                <label>Kampanya Metni</label>
+                <textarea id="campaignTxt" rows="2">Değerli yorumlarınızla işletmemize destek olun, sürpriz ikramlar kazanın!</textarea>
+                
+                <label class="check-group">
+                    <input type="checkbox" id="addDate" checked> Otomatik Tarih Ekle (Aciliyet Hissi Yaratır)
+                </label>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header" onclick="toggleSection(this)">🎨 TASARIM & DESEN <span>▼</span></div>
+            <div class="section-content">
+                <label>Kart Arka Plan Deseni</label>
+                <select id="bgPattern">
+                    <option value="bg-white">Sade Beyaz (Klasik)</option>
+                    <option value="bg-dots">Modern Noktalı (Az Mürekkep)</option>
+                    <option value="bg-lines">İnce Çizgili (Kurumsal)</option>
+                    <option value="bg-modern">Soft Mavi/Yeşil Geçiş</option>
+                    <option value="bg-gold">Gold Premium (Altın Çerçeve)</option>
+                </select>
+
+                <label>Kart Başlığı</label>
+                <input type="text" id="mainTitle" value="BİZİ DEĞERLENDİRİN">
+
+                <label>Sayfadaki Adet</label>
+                <select id="qrCount">
+                    <option value="2">2 Adet (Büyük Boy)</option>
+                    <option value="4" selected>4 Adet (Masa Üstü İdeal)</option>
+                </select>
+
+                <label>Logo Yükle</label>
+                <input type="file" id="logoInp" accept="image/*" onchange="loadLogo(this)">
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-blue" onclick="generate()">✨ TASARIMI OLUŞTUR</button>
+            <button class="btn btn-print" onclick="window.print()">🖨️ YAZDIR</button>
+        </div>
     </div>
 
-    <div id="printArea">
-        <div class="qr-item">
-            <h1 class="q-title"></h1>
-            <p class="q-msg"></p>
-            <div id="q1"></div>
-            <p style="margin-top:15px; font-size:12px; font-weight:bold;">Kameranızı Okutun</p>
-        </div>
-        <div class="qr-item">
-            <h1 class="q-title"></h1>
-            <p class="q-msg"></p>
-            <div id="q2"></div>
-            <p style="margin-top:15px; font-size:12px; font-weight:bold;">Kameranızı Okutun</p>
-        </div>
-    </div>
+    <div id="printArea"></div>
 
 <script>
-    let isAuto = false;
+    let logoData = null;
 
-    function createQR() {
-        try {
-            const title = document.getElementById('tInp').value;
-            const msg = document.getElementById('mInp').value;
-            const web = document.getElementById('urlInp').value || window.location.href;
+    function toggleSection(header) {
+        header.parentElement.classList.toggle('active');
+    }
 
-            // Yazıları A4 kağıdına basılacak yerlere aktar
-            document.querySelectorAll('.q-title').forEach(el => el.innerText = title);
-            document.querySelectorAll('.q-msg').forEach(el => el.innerText = msg);
-
-            // Overflow hatasını önlemek için QR içine SADECE link koyuyoruz
-            ["q1", "q2"].forEach(id => {
-                const el = document.getElementById(id);
-                el.innerHTML = "";
-                new QRCode(el, {
-                    text: web, // Sadece URL
-                    width: 250,
-                    height: 250,
-                    correctLevel: QRCode.CorrectLevel.M // Orta seviye hata düzeltme (daha stabil)
-                });
-            });
-
-            document.getElementById('printArea').style.display = "flex";
-            alert("QR Kodlar Başarıyla Oluşturuldu!");
-        } catch (e) {
-            alert("QR Hatası: " + e.message + "\nLütfen linki kontrol edin.");
+    function loadLogo(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (e) => { logoData = e.target.result; };
+            reader.readAsDataURL(input.files[0]);
         }
     }
 
-    async function startAutoMode() {
-        isAuto = true;
-        document.getElementById('startBtn').style.display = 'none';
-        document.getElementById('stopBtn').style.display = 'block';
-        loop();
+    function getFormattedDate() {
+        const d = new Date();
+        const months = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+        return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
     }
 
-    function stopAutoMode() {
-        isAuto = false;
-        document.getElementById('startBtn').style.display = 'block';
-        document.getElementById('stopBtn').style.display = 'none';
-        document.getElementById('status').style.display = 'none';
-    }
+    function generate() {
+        const area = document.getElementById('printArea');
+        const busName = document.getElementById('businessName').value;
+        const directUrl = document.getElementById('directUrl').value;
+        const campaign = document.getElementById('campaignTxt').value;
+        const count = parseInt(document.getElementById('qrCount').value);
+        const title = document.getElementById('mainTitle').value;
+        const bgClass = document.getElementById('bgPattern').value;
+        const showDate = document.getElementById('addDate').checked;
 
-    async function loop() {
-        if (!isAuto) return;
-        const s = document.getElementById('status');
-        s.style.display = "block";
-        s.style.background = "#2563eb";
-        s.style.color = "white";
-        s.innerText = "Yeni Cihaz Taranıyor... Listeden seçin.";
+        // SEO TRAFİK ALGORİTMASI
+        let finalQrData = "";
+        
+        if (busName && !directUrl) {
+            // 1. Yöntem: Arama Sorgusu (SEO Boost)
+            // Müşteri "İşletme Adı"nı Google'da aratmış gibi davranır.
+            finalQrData = `https://www.google.com/search?q=${encodeURIComponent(busName)}`;
+        } else if (directUrl) {
+            // 2. Yöntem: Direkt Link (UTM Ekli)
+            finalQrData = directUrl + (directUrl.includes('?') ? '&' : '?') + "utm_source=Physical_QR&utm_medium=Table_Tent";
+        } else {
+            // 3. Yöntem: Sadece Metin
+            finalQrData = campaign || "Hoşgeldiniz";
+        }
 
-        try {
-            const device = await navigator.bluetooth.requestDevice({
-                acceptAllDevices: true,
-                optionalServices: ['generic_access', 0x1802, 0x180a]
-            });
+        const dateStr = showDate ? `GEÇERLİLİK: ${getFormattedDate()}` : "";
+        
+        area.innerHTML = '';
+        area.className = `grid-${count}`;
+        const qrSize = (count === 4) ? 140 : 220;
 
-            s.style.background = "#059669";
-            s.innerText = "Yayın Başarılı: " + (device.name || "Müşteri Cihazı");
+        for (let i = 0; i < count; i++) {
+            const card = document.createElement('div');
+            card.className = `qr-card ${bgClass}`; // Seçilen deseni uygula
             
-            if (navigator.vibrate) navigator.vibrate(200);
-            setTimeout(() => { if(isAuto) loop(); }, 2500);
-        } catch (e) {
-            if(isAuto) setTimeout(() => loop(), 1000);
+            card.innerHTML = `
+                <div class="card-title">${title}</div>
+                <div class="campaign-text">${campaign}</div>
+                ${showDate ? `<div class="date-badge">${dateStr}</div>` : ''}
+                
+                <div class="qr-perfect-center">
+                    <div id="qr_gen_${i}"></div>
+                    ${logoData ? `<img src="${logoData}" class="qr-logo-overlay">` : ''}
+                </div>
+                
+                <div style="margin-top:15px; font-size:10px; font-weight:800; color:#64748b; z-index:2; position:relative;">
+                    KAMERA İLE OKUTUN & FIRSATI YAKALAYIN
+                </div>
+            `;
+            area.appendChild(card);
+
+            new QRCode(document.getElementById(`qr_gen_${i}`), {
+                text: finalQrData,
+                width: qrSize,
+                height: qrSize,
+                colorDark: "#000000",
+                correctLevel: QRCode.CorrectLevel.H
+            });
         }
+
+        area.style.display = 'grid';
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     }
 </script>
 </body>
